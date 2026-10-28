@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# MuJoCo runtime output
+MUJOCO_LOG.TXT
+mujoco_sim/assets/generated_scene.xml
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/

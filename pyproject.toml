@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "picobot-mujoco-sim"
+version = "0.1.0"
+description = "Deformable MuJoCo model of a UR5e + Piab piCOBOT Electric suction cell"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "David Caceres" }]
+keywords = ["mujoco", "robotics", "suction", "vacuum", "ur5e", "picobot", "simulation"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+dependencies = [
+    "mujoco>=3.2",
+    "numpy>=1.24",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+mesh = ["trimesh>=4"]
+
+[project.scripts]
+picobot-sim = "mujoco_sim.scripts.view_sim:main"
+
+[tool.setuptools.packages.find]
+include = ["mujoco_sim*"]
+
+[tool.setuptools.package-data]
+mujoco_sim = [
+    "assets/ur5e/*.obj",
+    "assets/ur5e/LICENSE",
+    "assets/ur5e/ur5e_reference.xml",
+    "assets/tool/*.obj",
+    "assets/objects/*.obj",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["mujoco_sim/tests"]
