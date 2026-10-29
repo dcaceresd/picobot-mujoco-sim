@@ -13,14 +13,20 @@ default at 1600x900.
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 import mujoco
 import numpy as np
 from PIL import Image
 
-from mujoco_sim import SuctionEnv
-from mujoco_sim.config import OBJ_SPECS
+# allow ``python docs/render_images.py`` straight from a checkout
+_ROOT = Path(__file__).resolve().parents[1]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
+
+from mujoco_sim import SuctionEnv  # noqa: E402
+from mujoco_sim.config import OBJ_SPECS  # noqa: E402
 
 #: free-camera poses used for the two README images
 POSES: dict[str, dict] = {
