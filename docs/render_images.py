@@ -4,8 +4,10 @@ Usage::
 
     .venv/bin/python docs/render_images.py
 
-The images are written to ``docs/images`` by default.  They are ordinary
-MuJoCo renders (no post-processing) of the 11-object scene at 1600x900.
+``payloads.png`` is the settled 11-object scene.  ``cell.png`` shows the
+UR5e + piCOBOT holding the bottle after a real scripted pick (approach,
+descend, 15 kPa engage, lift).  Images are written to ``docs/images`` by
+default at 1600x900.
 """
 
 from __future__ import annotations
@@ -22,13 +24,46 @@ from mujoco_sim.config import OBJ_SPECS
 
 #: free-camera poses used for the two README images
 POSES: dict[str, dict] = {
-    "cell": dict(
-        lookat=(0.34, 0.0, 0.88), distance=1.35, azimuth=120.0, elevation=-25.0
-    ),
     "payloads": dict(
         lookat=(0.36, 0.0, 0.86), distance=1.25, azimuth=125.0, elevation=-24.0
     ),
+    "cell": dict(
+        lookat=(0.38, 0.0, 1.00), distance=1.60, azimuth=125.0, elevation=-22.0
+    ),
 }
+
+#: where the bottle is held for the hero image (cup-tip target, world metres)
+PICK_LIFT_TARGET = (0.50, -0.05, 1.05)
+
+
+def _render(renderer, env, pose: dict, path: Path) -> None:
+    camera = mujoco.MjvCamera()
+    camera.lookat[:] = np.asarray(pose["lookat"], dtype=float)
+    camera.distance = float(pose["distance"])
+    camera.azimuth = float(pose["azimuth"])
+    camera.elevation = float(pose["elevation"])
+    renderer.update_scene(env.data, camera=camera)
+    Image.fromarray(renderer.render()).save(path)
+    print(path)
+
+
+def _pick_bottle(env) -> None:
+    top = env.object_top_center("bottle")
+    env.move_tip_to(top + np.array([0, 0, 0.09]), duration_s=1.0, check=False)
+    env.move_tip_to(top + np.array([0, 0, -0.0002]), duration_s=1.0, check=False)
+    env.hold(0.5)
+    env.suction.set_cmd(15.0)
+    env.hold(1.2)
+    if not env.suction.part_present:
+        raise RuntimeError("bottle pick did not seal")
+    env.move_tip_to(np.asarray(PICK_LIFT_TARGET), duration_s=1.5, check=False)
+    env.hold(0.5)
+    if not env.suction.part_present:
+        raise RuntimeError("bottle was lost during the lift")
+    print(
+        "bottle held at %.3f m clearance, vacuum %.1f kPa"
+        % (env.object_clearance_m("bottle"), env.suction.vacuum_kpa)
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -49,16 +84,10 @@ def main(argv: list[str] | None = None) -> int:
         env.model.vis.global_.offheight = args.height
         renderer = mujoco.Renderer(env.model, args.height, args.width)
         try:
-            for name, pose in POSES.items():
-                camera = mujoco.MjvCamera()
-                camera.lookat[:] = np.asarray(pose["lookat"], dtype=float)
-                camera.distance = float(pose["distance"])
-                camera.azimuth = float(pose["azimuth"])
-                camera.elevation = float(pose["elevation"])
-                renderer.update_scene(env.data, camera=camera)
-                path = args.out / f"{name}.png"
-                Image.fromarray(renderer.render()).save(path)
-                print(path)
+            # payload close-up first, while every object is still on the table
+            _render(renderer, env, POSES["payloads"], args.out / "payloads.png")
+            _pick_bottle(env)
+            _render(renderer, env, POSES["cell"], args.out / "cell.png")
         finally:
             renderer.close()
     finally:

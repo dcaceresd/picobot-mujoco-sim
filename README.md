@@ -12,7 +12,9 @@ mounted on the work table.  It serves two purposes:
    depth and point clouds, with per-attempt labels in a recordings-like
    directory layout.
 
-![MuJoCo model of the UR5e + piCOBOT suction cell](docs/images/cell.png)
+![UR5e + piCOBOT picking the bottle](docs/images/cell.png)
+
+*The UR5e + piCOBOT picking the bottle in the 11-object scene.*
 
 ```
 .
@@ -218,14 +220,16 @@ table-tennis racket with a rubber face, and a rocket lying on its side).
 
 ![Payload meshes in the MuJoCo scene](docs/images/payloads.png)
 
-Regenerate both README renders from the live simulation with
-`.venv/bin/python docs/render_images.py`.
 Collision stays on cheap primitives (`geoms=`), which are moved to render
 group 3 when a visual mesh exists.  The bowl and mug are **hollow**: their
 collision is a floor plus a ring of wall boxes, so the cup can descend into
 the vessel and seal on the interior floor.  `pick_offset_xy` / `pick_offset_z`
 place the vacuum cup on the actual grasp surface (blade centre for the
 racket, interior floor for the bowl and mug).
+
+Regenerate both README renders from the live simulation with
+`.venv/bin/python docs/render_images.py` (the script performs a real 15 kPa
+bottle pick before rendering `cell.png`).
 
 ### Seal calibration
 
