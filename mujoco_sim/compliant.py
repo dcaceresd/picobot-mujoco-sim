@@ -171,6 +171,11 @@ class CompliantCupSuction:
         return self._force_budget
 
     @property
+    def coverage_filtered(self) -> float:
+        """Low-pass filtered lip coverage (0..1) used by the seal logic."""
+        return self._coverage_f
+
+    @property
     def holding_body(self) -> int | None:
         return self.sealed_body if self.part_present else None
 

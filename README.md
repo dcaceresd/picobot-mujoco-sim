@@ -12,9 +12,9 @@ mounted on the work table.  It serves two purposes:
    depth and point clouds, with per-attempt labels in a recordings-like
    directory layout.
 
-![UR5e + piCOBOT picking the bottle](docs/images/cell.png)
+![UR5e + piCOBOT picking the ceramic mug](docs/images/cell.png)
 
-*The UR5e + piCOBOT picking the bottle in the 11-object scene.*
+*The UR5e + piCOBOT picking the ceramic mug in the 11-object scene.*
 
 ```
 .
@@ -39,6 +39,7 @@ mounted on the work table.  It serves two purposes:
     ├── scripts/
     │   ├── kinematics_check.py
     │   ├── pick_test.py           # one attempt, real recorder phases
+    │   ├── plot_pick.py           # pressure/force/seal trace + figure
     │   ├── sweep_test.py          # pressure sweep / P_min analogue
     │   ├── generate_dataset.py    # synthetic RGB-D dataset
     │   └── view_sim.py            # interactive viewer (keyboard control)
@@ -72,16 +73,19 @@ cd picobot-mujoco-sim
 .venv/bin/python -m mujoco_sim.scripts.pick_test \
     --object white_bowl --setpoint 12 --json /tmp/pick.json
 
-# 3. pressure sweep (P_min analogue + calibration check)
+# 3. pressure/force/seal evolution during a pick
+.venv/bin/python -m mujoco_sim.scripts.plot_pick
+
+# 4. pressure sweep (P_min analogue + calibration check)
 .venv/bin/python -m mujoco_sim.scripts.sweep_test \
     --object white_bowl --levels 5 8 11 15 21
 
-# 4. synthetic dataset (RGB-D from external + wrist cameras)
+# 5. synthetic dataset (RGB-D from external + wrist cameras)
 .venv/bin/python -m mujoco_sim.scripts.generate_dataset \
     --objects white_foam white_bowl soda_can --levels 5 8 11 15 21 \
     --attempts 3 --out /tmp/sim_dataset
 
-# 5. interactive viewer
+# 6. interactive viewer
 .venv/bin/python -m mujoco_sim.scripts.view_sim
 ```
 
@@ -229,7 +233,7 @@ racket, interior floor for the bowl and mug).
 
 Regenerate both README renders from the live simulation with
 `.venv/bin/python docs/render_images.py` (the script performs a real 15 kPa
-bottle pick before rendering `cell.png`).
+mug pick before rendering `cell.png`).
 
 ### Seal calibration
 
@@ -254,6 +258,26 @@ Objects without a measured real-cell threshold: the `ceramic_mug` (248 g) and
 `racket` (168 g) both hold at 5 kPa in sim (the racket's real-cell pick was
 floor-censored).  The `rocket` is deliberately a poor suction target: it lies
 on its side, so the lip only gets a line contact (`seal_quality=0.20`).
+
+### Pressure evolution during a pick
+
+![Pressure, force and seal during a ceramic mug pick](docs/images/pick_pressure.png)
+
+`mujoco_sim/scripts/plot_pick.py` runs the standard pick sequence at the
+100 Hz control rate and plots the commanded setpoint, pump source, true
+chamber pressure and filtered sensor; object clearance and the PP comparator;
+applied force, pull-off budget and payload weight; and lip coverage / contact
+quality.  The trace shows the measured engage overshoot (~49 kPa for a 15 kPa
+command), the decay to the `cmd + 1` steady level, the PP latch, the lift and
+the release vent.
+
+The default is the ceramic mug at 15 kPa.  Use `--object` and `--setpoint`
+for other payloads/commands, and `--csv` to save the raw trace:
+
+```bash
+.venv/bin/python -m mujoco_sim.scripts.plot_pick \
+    --object soda_can --setpoint 11 --out /tmp/can.png --csv /tmp/can.csv
+```
 
 ## Scene configuration
 

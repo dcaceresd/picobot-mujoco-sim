@@ -25,7 +25,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=7", "pillow>=9"]
+dev = ["pytest>=7", "pillow>=9", "matplotlib>=3.7"]
+viz = ["matplotlib>=3.7"]
 mesh = ["trimesh>=4"]
 
 [project.scripts]

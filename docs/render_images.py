@@ -5,7 +5,7 @@ Usage::
     .venv/bin/python docs/render_images.py
 
 ``payloads.png`` is the settled 11-object scene.  ``cell.png`` shows the
-UR5e + piCOBOT holding the bottle after a real scripted pick (approach,
+UR5e + piCOBOT holding the ceramic mug after a real scripted pick (approach,
 descend, 15 kPa engage, lift).  Images are written to ``docs/images`` by
 default at 1600x900.
 """
@@ -28,12 +28,13 @@ POSES: dict[str, dict] = {
         lookat=(0.36, 0.0, 0.86), distance=1.25, azimuth=125.0, elevation=-24.0
     ),
     "cell": dict(
-        lookat=(0.38, 0.0, 1.00), distance=1.60, azimuth=125.0, elevation=-22.0
+        lookat=(0.38, 0.0, 0.95), distance=1.45, azimuth=125.0, elevation=-24.0
     ),
 }
 
-#: where the bottle is held for the hero image (cup-tip target, world metres)
-PICK_LIFT_TARGET = (0.50, -0.05, 1.05)
+#: object and lift target for the hero image (cup-tip target, world metres)
+PICK_OBJECT = "ceramic_mug"
+PICK_LIFT_TARGET = (0.48, -0.02, 0.92)
 
 
 def _render(renderer, env, pose: dict, path: Path) -> None:
@@ -47,22 +48,23 @@ def _render(renderer, env, pose: dict, path: Path) -> None:
     print(path)
 
 
-def _pick_bottle(env) -> None:
-    top = env.object_top_center("bottle")
+def _pick_object(env) -> None:
+    top = env.object_top_center(PICK_OBJECT)
     env.move_tip_to(top + np.array([0, 0, 0.09]), duration_s=1.0, check=False)
     env.move_tip_to(top + np.array([0, 0, -0.0002]), duration_s=1.0, check=False)
     env.hold(0.5)
     env.suction.set_cmd(15.0)
     env.hold(1.2)
     if not env.suction.part_present:
-        raise RuntimeError("bottle pick did not seal")
+        raise RuntimeError(f"{PICK_OBJECT} pick did not seal")
     env.move_tip_to(np.asarray(PICK_LIFT_TARGET), duration_s=1.5, check=False)
     env.hold(0.5)
     if not env.suction.part_present:
-        raise RuntimeError("bottle was lost during the lift")
+        raise RuntimeError(f"{PICK_OBJECT} was lost during the lift")
     print(
-        "bottle held at %.3f m clearance, vacuum %.1f kPa"
-        % (env.object_clearance_m("bottle"), env.suction.vacuum_kpa)
+        "%s held at %.3f m clearance, vacuum %.1f kPa"
+        % (PICK_OBJECT, env.object_clearance_m(PICK_OBJECT),
+           env.suction.vacuum_kpa)
     )
 
 
@@ -86,7 +88,7 @@ def main(argv: list[str] | None = None) -> int:
         try:
             # payload close-up first, while every object is still on the table
             _render(renderer, env, POSES["payloads"], args.out / "payloads.png")
-            _pick_bottle(env)
+            _pick_object(env)
             _render(renderer, env, POSES["cell"], args.out / "cell.png")
         finally:
             renderer.close()

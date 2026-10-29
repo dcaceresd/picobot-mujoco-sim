@@ -20,6 +20,7 @@ import json
 import logging
 import os
 import tempfile
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -157,6 +158,8 @@ class SuctionEnv:
         self._cams: CameraSuite | None = None
         #: feed-forward gravity compensation on the arm (UR5e-like tracking)
         self.gravity_compensation: bool = True
+        #: optional ``callback(env)`` called after every control tick
+        self.telemetry_callback: Callable[["SuctionEnv"], None] | None = None
 
         self.reset()
 
@@ -234,7 +237,11 @@ class SuctionEnv:
         return self.data.ctrl[self._arm_act].copy()
 
     def step(self, n_steps: int = 1) -> None:
-        """Advance ``n_steps`` control ticks (physics runs at ``timestep_s``)."""
+        """Advance ``n_steps`` control ticks (physics runs at ``timestep_s``).
+
+        If :attr:`telemetry_callback` is set, it is called with this env after
+        every control tick (useful for logging pressure/force traces).
+        """
         substeps = self.cfg.substeps_per_control
         for _ in range(max(1, int(n_steps))):
             for _ in range(substeps):
@@ -248,6 +255,8 @@ class SuctionEnv:
                     )
                 self.suction.update()
                 self._mj.mj_step(self.model, self.data)
+            if self.telemetry_callback is not None:
+                self.telemetry_callback(self)
 
     def hold(self, seconds: float) -> None:
         self.step(max(1, int(round(seconds / self.cfg.control_dt_s))))
