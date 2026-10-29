@@ -12,12 +12,15 @@ mounted on the work table.  It serves two purposes:
    depth and point clouds, with per-attempt labels in a recordings-like
    directory layout.
 
+![MuJoCo model of the UR5e + piCOBOT suction cell](docs/images/cell.png)
+
 ```
 .
 ├── README.md
 ├── pyproject.toml
 ├── LICENSE
 ├── NOTICE
+├── docs/images/              # README renders
 └── mujoco_sim/
     ├── assets/ur5e/          # Menagerie UR5e meshes + reference MJCF
     ├── assets/tool/          # procedural piCOBOT body, B30-2 cup, collar
@@ -212,6 +215,11 @@ Every payload in `OBJ_SPECS` has render-only meshes under
 `mujoco_sim/assets/objects/` (rounded foam/magazine/cubes, a rounded-square bowl, a
 hollow mug with a torus handle, a bottle with cap, a can with a lid, a
 table-tennis racket with a rubber face, and a rocket lying on its side).
+
+![Payload meshes in the MuJoCo scene](docs/images/payloads.png)
+
+Regenerate both README renders from the live simulation with
+`.venv/bin/python docs/render_images.py`.
 Collision stays on cheap primitives (`geoms=`), which are moved to render
 group 3 when a visual mesh exists.  The bowl and mug are **hollow**: their
 collision is a floor plus a ring of wall boxes, so the cup can descend into
