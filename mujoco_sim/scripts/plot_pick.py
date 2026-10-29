@@ -130,7 +130,6 @@ def plot_trace(
     sensor = np.array([r["sensor_kpa"] for r in trace])
     pp = np.array([r["pp"] for r in trace], dtype=float)
     coverage = np.array([r["coverage"] for r in trace]) * 100.0
-    quality = np.array([r["seal_quality"] for r in trace]) * 100.0
     clearance_cm = np.array([r["clearance_m"] for r in trace]) * 100.0
     force = np.array([r["force_n"] for r in trace])
     budget = np.array([r["budget_n"] for r in trace])
@@ -209,10 +208,9 @@ def plot_trace(
     ax3.legend(loc="upper left", fontsize=7.5)
 
     ax4.plot(t, coverage, color="tab:green", lw=1.7, label="Coverage")
-    ax4.plot(t, quality, color="tab:olive", lw=1.2, label="Contact quality")
     ax4.set_ylim(0.0, 106.0)
-    ax4.set_ylabel("seal (%)")
-    ax4.set_title("Lip seal", loc="left", fontsize=9)
+    ax4.set_ylabel("seal coverage (%)")
+    ax4.set_title("Lip seal coverage", loc="left", fontsize=9)
     ax4.legend(loc="upper left", fontsize=7.5)
 
     for ax in (ax2, ax3, ax4):

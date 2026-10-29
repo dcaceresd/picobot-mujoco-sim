@@ -266,8 +266,7 @@ on its side, so the lip only gets a line contact (`seal_quality=0.20`).
 `mujoco_sim/scripts/plot_pick.py` runs the standard pick sequence at the
 100 Hz control rate and plots the commanded setpoint, pump source, true
 chamber pressure and filtered sensor; object clearance and the PP comparator;
-applied force, pull-off budget and payload weight; and lip coverage / contact
-quality.  The trace shows the measured engage overshoot (~49 kPa for a 15 kPa
+applied force, pull-off budget and payload weight; and lip coverage.  The trace shows the measured engage overshoot (~49 kPa for a 15 kPa
 command), the decay to the `cmd + 1` steady level, the PP latch, the lift and
 the release vent.
 
